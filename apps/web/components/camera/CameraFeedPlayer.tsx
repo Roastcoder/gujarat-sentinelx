@@ -22,6 +22,8 @@ import {
   RefreshCw,
   ExternalLink,
 } from 'lucide-react';
+import { getApiBase } from '@/lib/api';
+
 
 // Simulated ANPR detections per camera (rotates to show "live" detections)
 const DETECTION_POOL = [
@@ -112,9 +114,10 @@ export default function CameraFeedPlayer({
   const cameraName = camera.name || `Camera ${camId.toUpperCase()}`;
   const districtName = camera.district || camera.district_name || 'Ahmedabad';
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+  const apiBase = getApiBase();
   const snapshotUrl = `/camera_snapshots/${camId}.jpg`;
   const whepUrl = `${apiBase}/streams/${camId}/whep`;
+
 
   // Real-time HUD Clock
   useEffect(() => {

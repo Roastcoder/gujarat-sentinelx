@@ -1,7 +1,21 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+export function getApiBase(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('sentinelx.')) {
+      return `${window.location.protocol}//${host.replace('sentinelx.', 'sentinelx-api.')}/api/v1`;
+    }
+    if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('localhost')) {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    return '/api/v1';
+  }
+  return process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://sentinelx-api.187.77.187.120.sslip.io/api/v1';
+}
 
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const base = getApiBase();
+  const url = endpoint.startsWith('http') ? endpoint : `${base}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+
   try {
     const res = await fetch(url, {
       ...options,
