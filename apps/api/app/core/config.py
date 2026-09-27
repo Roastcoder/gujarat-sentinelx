@@ -49,6 +49,8 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
+        "https://sentinelx.187.77.187.120.sslip.io",
+        "https://sentinelx-api.187.77.187.120.sslip.io",
     ]
 
     # Surepass Government VAHAN / RC / e-Challan / Aadhaar Integration
