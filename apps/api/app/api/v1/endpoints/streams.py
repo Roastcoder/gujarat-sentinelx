@@ -3,11 +3,16 @@ Stream Operations & Session Management Endpoints
 Conforms to Sections 6, 8, 11, 17, 18, 19.
 """
 
+import os
+import re
+import httpx
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import Response, JSONResponse, FileResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.camera import Camera, CameraHealth
 from app.services.stream_manager import stream_manager
@@ -123,3 +128,74 @@ async def get_catalogue_status(
 ):
     """Returns discovery catalogue sync status and cached count."""
     return catalogue_service.get_sync_status()
+
+@router.api_route("/{cam_id}/whep", methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"])
+async def proxy_whep_stream(
+    cam_id: str,
+    request: Request
+):
+    """
+    Secure HTTPS WebRTC WHEP Proxy to Sentinel MediaMTX Grid (103.250.160.189:8889).
+    Bypasses browser Mixed Content security blocking when application is deployed over HTTPS.
+    Forward client SDP offer with Basic Auth and return SDP answer.
+    """
+    if request.method == "OPTIONS":
+        return Response(status_code=200, headers={"Allow": "GET, POST, PATCH, DELETE, OPTIONS"})
+
+    clean_id = cam_id.lower().replace("-", "").replace("_", "")
+    match = re.search(r'(\d+)', clean_id)
+    num = int(match.group(1)) if match else 1
+    stream_key = f"cam{str(num).zfill(2)}"
+    
+    target_url = f"http://{settings.SENTINEL_GRID_HOST}:{settings.SENTINEL_GRID_WHEP_PORT}/stream/{stream_key}/whep"
+    body_bytes = await request.body()
+    
+    headers = {"Content-Type": request.headers.get("content-type", "application/sdp")}
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.request(
+                method=request.method,
+                url=target_url,
+                content=body_bytes,
+                headers=headers,
+                auth=(settings.SENTINEL_GRID_EMAIL, settings.SENTINEL_GRID_PASSWORD)
+            )
+            
+            resp_headers = {"Content-Type": resp.headers.get("content-type", "application/sdp")}
+            if "location" in resp.headers:
+                resp_headers["Location"] = resp.headers["location"]
+                
+            return Response(
+                content=resp.content,
+                status_code=resp.status_code,
+                headers=resp_headers
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            content={"status": "error", "message": f"WHEP gateway error: {str(e)}"}
+        )
+
+@router.get("/{cam_id}/snapshot")
+async def get_stream_snapshot(cam_id: str):
+    """
+    Returns high-definition JPEG snapshot frame for specified camera.
+    """
+    clean_id = cam_id.lower().replace("-", "").replace("_", "")
+    match = re.search(r'(\d+)', clean_id)
+    num = int(match.group(1)) if match else 1
+    cam_num = ((num - 1) % 16) + 1
+    key = f"cam{str(cam_num).zfill(2)}"
+
+    possible_paths = [
+        os.path.join(os.getcwd(), "storage", "camera_snapshots", f"{key}.jpg"),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "storage", "camera_snapshots", f"{key}.jpg")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "web", "public", "camera_snapshots", f"{key}.jpg")),
+        os.path.join(os.getcwd(), "storage", "camera_snapshots", "cam01.jpg"),
+    ]
+    for p in possible_paths:
+        if os.path.exists(p):
+            return FileResponse(p, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=1"})
+
+    return Response(status_code=404, content="Snapshot not found")

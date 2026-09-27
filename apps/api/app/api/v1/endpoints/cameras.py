@@ -137,28 +137,22 @@ async def get_camera_live_frame(id: str):
     cam_num = ((num - 1) % 16) + 1
     cam_id = f"cam{str(cam_num).zfill(2)}"
 
-    snapshot_path = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "..", "..", "..", "..", "..",
-        "web", "public", "camera_snapshots", f"{cam_id}.jpg"
-    ))
+    possible_paths = [
+        os.path.join(os.getcwd(), "storage", "camera_snapshots", f"{cam_id}.jpg"),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "storage", "camera_snapshots", f"{cam_id}.jpg")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "web", "public", "camera_snapshots", f"{cam_id}.jpg")),
+        os.path.join(os.getcwd(), "storage", "camera_snapshots", "cam01.jpg"),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "storage", "camera_snapshots", "cam01.jpg")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "..", "web", "public", "camera_snapshots", "cam01.jpg")),
+    ]
 
-    if os.path.exists(snapshot_path):
-        return FileResponse(
-            snapshot_path,
-            media_type="image/jpeg",
-            headers={"Cache-Control": "public, max-age=1"}
-        )
-
-    fallback_path = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "..", "..", "..", "..", "..",
-        "web", "public", "camera_snapshots", "cam01.jpg"
-    ))
-    if os.path.exists(fallback_path):
-        return FileResponse(
-            fallback_path,
-            media_type="image/jpeg",
-            headers={"Cache-Control": "public, max-age=1"}
-        )
+    for p in possible_paths:
+        if os.path.exists(p):
+            return FileResponse(
+                p,
+                media_type="image/jpeg",
+                headers={"Cache-Control": "public, max-age=1"}
+            )
 
     return Response(status_code=404, content="Frame not available")
 

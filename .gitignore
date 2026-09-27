@@ -54,3 +54,4 @@ cookies.txt
 # OS
 .DS_Store
 Thumbs.db
+apps/web/public/anpr_captures/

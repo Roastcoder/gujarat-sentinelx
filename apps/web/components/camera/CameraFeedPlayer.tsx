@@ -112,8 +112,9 @@ export default function CameraFeedPlayer({
   const cameraName = camera.name || `Camera ${camId.toUpperCase()}`;
   const districtName = camera.district || camera.district_name || 'Ahmedabad';
 
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
   const snapshotUrl = `/camera_snapshots/${camId}.jpg`;
-  const whepUrl = `http://103.250.160.189:8889/stream/${camId}/whep`;
+  const whepUrl = `${apiBase}/streams/${camId}/whep`;
 
   // Real-time HUD Clock
   useEffect(() => {
@@ -236,7 +237,7 @@ export default function CameraFeedPlayer({
         timestamp: detection.timestamp.toISOString(),
       };
 
-      const res = await fetch('http://localhost:8000/api/v1/anpr/ingest', {
+      const res = await fetch(`${apiBase}/anpr/ingest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -457,13 +458,24 @@ export default function CameraFeedPlayer({
           <img
             src={`${snapshotUrl}?t=${snapshotTimestamp}`}
             alt={cameraName}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = `${apiBase}/streams/${camId}/snapshot`;
+            }}
             style={visualStyle}
             className="w-full h-full object-cover"
           />
         ) : (
           /* PAUSED overlay */
           <div className="w-full h-full relative">
-            <img src={`${snapshotUrl}?t=${snapshotTimestamp}`} alt={cameraName} style={visualStyle} className="w-full h-full object-cover opacity-60" />
+            <img
+              src={`${snapshotUrl}?t=${snapshotTimestamp}`}
+              alt={cameraName}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = `${apiBase}/streams/${camId}/snapshot`;
+              }}
+              style={visualStyle}
+              className="w-full h-full object-cover opacity-60"
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-black/80 rounded-xl px-6 py-3 flex items-center gap-3 border border-slate-700">
                 <Pause className="h-6 w-6 text-slate-300" />
