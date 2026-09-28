@@ -5,6 +5,16 @@
 
 > **Tagline:** *"Connect Every Camera. Understand Every Event. Reconstruct Every Journey."*
 
+## 🏆 Hackathon Submission Deliverables
+
+The complete hackathon submission package is organized in dedicated documents and folders:
+
+1. **[Solution Presentation (Slide Deck)](file:///Users/yogiifaujdar/Downloads/Gujarat%20SentinelX/SOLUTION_PRESENTATION.md):** 14-slide executive presentation covering problem statement, value proposition, acceptance test results, MoRTH VAHAN 4.0 integration, VMS federation, C4 architecture, and statewide 80k scalability.
+2. **[High-Level Design (HLD) Document](file:///Users/yogiifaujdar/Downloads/Gujarat%20SentinelX/HIGH_LEVEL_DESIGN.md):** Complete technical architecture document detailing C4 diagrams, subsystem specifications, storage topology (PostGIS, ClickHouse, OpenSearch, MinIO), capacity calculations, and Section 65B forensics.
+3. **[Workflow & Integration Diagrams](file:///Users/yogiifaujdar/Downloads/Gujarat%20SentinelX/WORKFLOW_INTEGRATION_DIAGRAMS.md):** Production-grade Mermaid sequence and flow diagrams for Vehicle Journey Tracking, Heterogeneous VMS Federation, MoRTH VAHAN 4.0 Surepass Gateway, Real-Time Alert Dispatch, and Section 65B Forensic Hashing.
+4. **[Screenshots Folder & Visual Gallery](file:///Users/yogiifaujdar/Downloads/Gujarat%20SentinelX/screenshots/README.md):** 11 Full HD (1920×1080) native application captures demonstrating every core capability (Command Dashboard, Vehicle Journey `GJ01AB1234`, Live CCTV Grid, VMS Gateway, Alerts, System Health, and VAHAN RC Portal).
+5. **[Submit Your Solution (Video Demonstration Guide)](file:///Users/yogiifaujdar/Downloads/Gujarat%20SentinelX/SUBMISSION_VIDEO_GUIDE.md):** Timestamped 8-scene voiceover script, recording guide, and copy-paste portal submission entries.
+
 ---
 
 ## 🌟 Overview
